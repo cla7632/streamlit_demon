@@ -365,6 +365,9 @@ st.write("""
 - **Churn Probability: 1.00**: This means the model is 100% confident that churn will happen. While this is a strong prediction, it's essential to validate with real data and consider taking proactive measures to prevent churn.
 """)
 
+st.markdown('<h1 style="color: yellow;">Meet the BULLISH yellow man!!!</h1>', unsafe_allow_html=True)
+st.video('video (2).mp4')
+
 st.markdown('<h1 style="color: yellow;">ARPU Forecasting Methodology</h1>', unsafe_allow_html=True)
 
 # Adding explanatory text
@@ -434,5 +437,9 @@ Using the `sklearn` library in Python, the steps include:
 # Adding a disclaimer
 st.write("""
 ### Disclaimer
+<<<<<<< HEAD
+The data and analysis on this page are for demonstration purposes only prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
+=======
 The data and analysis on this page are for demonstration purposes only and prepared by lachieng. Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
+>>>>>>> 143f654ed4d6ce36c9ea8c77928c50182e9ff22d
 """)
