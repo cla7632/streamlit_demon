@@ -437,9 +437,7 @@ Using the `sklearn` library in Python, the steps include:
 # Adding a disclaimer
 st.write("""
 ### Disclaimer
-<<<<<<< HEAD
-The data and analysis on this page are for demonstration purposes only prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
-=======
-The data and analysis on this page are for demonstration purposes only and prepared by lachieng. Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
->>>>>>> 143f654ed4d6ce36c9ea8c77928c50182e9ff22d
+
+The data and analysis on this page are for demonstration purposes only and prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
+
 """)
