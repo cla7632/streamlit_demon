@@ -343,15 +343,32 @@ st.markdown(
 # Plotly Visualizations
 st.subheader('Revenue and Subscriber Trends')
 
-fig = px.line(df, x='quarter', y=['postpaidrevenue_rmm', 'prepaidrevenue_rmm', 'wholesaleothersrevenue_rmm', 'homefibrerevenue_rmm'],
-              labels={'value': 'Revenue (RM Million)', 'quarter': 'Quarter'},
-              title='Revenue Trends by Segment')
-st.plotly_chart(fig)
+# Revenue Trends
 
-fig = px.line(df, x='quarter', y=['postpaidmobile_000', 'prepaid_000', 'fibre_000', 'totalsubscribers_000'],
-              labels={'value': 'Subscribers (000)', 'quarter': 'Quarter'},
-              title='Subscriber Trends by Segment')
-st.plotly_chart(fig)
+
+fig_bar_revenue = px.bar(df, x='quarter', y=['postpaidrevenue_rmm', 'prepaidrevenue_rmm', 'wholesaleothersrevenue_rmm', 'homefibrerevenue_rmm'],
+                         labels={'value': 'Revenue (RM Million)', 'quarter': 'Quarter'},
+                         title='Revenue Trends by Segment (Bar Chart)',
+                         template="plotly_dark",
+                         barmode='group')
+st.plotly_chart(fig_bar_revenue)
+
+
+
+# Subscriber Trends
+
+
+fig_scatter_subscribers = px.scatter(df, x='quarter', y=['postpaidmobile_000', 'prepaid_000', 'fibre_000', 'totalsubscribers_000'],
+                                     labels={'value': 'Subscribers (000)', 'quarter': 'Quarter'},
+                                     title='Subscriber Trends by Segment (Scatter Plot)',
+                                     template="plotly_dark")
+st.plotly_chart(fig_scatter_subscribers)
+
+
+
+# Display the DataFrame itself for reference
+st.subheader('DataSet')
+st.write(df)
 
 # Churn Prediction
 st.subheader('Churn Prediction for Next Quarter')
