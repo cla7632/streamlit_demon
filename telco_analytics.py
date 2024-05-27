@@ -91,7 +91,54 @@ data = {
     "blendedarpu_rm": [42, 42, 42, 42, 42, 41, 40, 41]
 }
 
+# https://storage.dosm.gov.my/gdp/gdp_2024-q1.pdf, page 20
+new_gdp_data = {
+    "quarter": ["1Q2022", "2Q2022", "3Q2022", "4Q2022", "1Q2023", "2Q2023", "3Q2023", "4Q2023","1Q2024"],
+    "Malaysia_GDP(%)": [5.1, 8.9, 14.4, 7.4, 5.5, 2.8, 3.1, 2.9,4.2]
+}
+
+# CPI data from https://storage.dosm.gov.my/cpi/cpi_2024-04_main.xlsx
+cpi_data = {
+    "month": [
+        "Jan2023", "Feb2023", "Mar2023", "Apr2023", "May2023", "Jun2023", 
+        "Jul2023", "Aug2023", "Sept2023", "Oct2023", "Nov2023", "Dec2023", 
+        "Jan2024", "Feb2024", "Mae2024", "Apr2024"
+    ],
+    "CPI(RM)": [
+        130.7, 131.2, 131.2, 131.3, 131.5, 131.7, 131.8, 132.0, 132.0, 132.1, 
+        132.2, 132.4, 132.7, 133.4, 133.4, 133.6
+    ],
+    "Information&Communication_CPI(RM)": [
+        96.0, 96.0, 96.0, 96.0, 93.7, 93.7, 93.6, 93.6, 93.7, 93.6, 
+        93.7, 93.6, 93.6, 93.6, 93.6, 93.5
+    ]
+}
+
+# based on BNM official "https://www.bnm.gov.my/monetary-stability/opr-decisions"
+opr_data = {
+    "date": [
+        "20 Jan 2022", "03 Mar 2022", "11 May 2022", "06 Jul 2022", 
+        "08 Sep 2022", "03 Nov 2022", "19 Jan 2023", "09 Mar 2023", 
+        "03 May 2023", "06 Jul 2023", "07 Sep 2023", "02 Nov 2023", 
+        "24 Jan 2024", "07 Mar 2024", "09 May 2024"
+    ],
+    "change_in_opr(%)": [
+        0, 0, 0.25, 0.25, 0.25, 0.25, 0, 0, 0.25, 0, 0, 0, 0, 0, 0
+    ],
+    "new_opr_level(%)": [
+        1.75, 1.75, 2, 2.25, 2.5, 2.75, 2.75, 2.75, 3, 3, 3, 3, 3, 3, 3
+    ]
+}
+
+
+df_gdp = pd.DataFrame(new_gdp_data)
+
 df = pd.DataFrame(data)
+
+df_cpi = pd.DataFrame(cpi_data)
+
+df_opr = pd.DataFrame(opr_data)
+
 
 # Fill missing values
 df.fillna(0, inplace=True)
@@ -168,6 +215,15 @@ churn_probability = model.predict_proba(next_quarter_features)[0][1]
 print("Churn Forecast for Next Quarter:", churn_forecast[0])
 print("Churn Probability for Next Quarter:", churn_probability)
 
+# Adding a disclaimer
+st.write("""
+### Disclaimer
+
+The data and analysis on this page are for demonstration purposes only and prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html), [DOSM](https://www.dosm.gov.my/), and [BNM](https://www.bnm.gov.my/monetary-stability/opr-decisions) for up-to-date and accurate information.
+
+""")
+
+
 # Streamlit Dashboard
 st.markdown('<h1 style="color: yellow;">Telco ARPU and Subscriber Analytics & Prediction</h1>', unsafe_allow_html=True)
 
@@ -175,8 +231,11 @@ st.markdown('<h1 style="color: yellow;">Telco ARPU and Subscriber Analytics & Pr
 latest_quarter = df.iloc[-1]
 previous_quarter = df.iloc[-2]
 
+# Find the latest quarter from the DataFrame
+latest_Q = df['quarter'].iloc[-1]
 
-st.subheader('Latest Quarter (Q4 2023) Information')
+st.subheader(f"Latest Quarter {latest_Q} Information")
+
 
 # Function to determine the color of the text based on value comparison
 def get_color(current, previous):
@@ -242,7 +301,11 @@ def display_metric_cards(metrics):
             """, unsafe_allow_html=True
         )
 
+st.subheader("Revenue Metrics")
+display_metric_cards(revenue_metrics)
 
+st.subheader("ARPU Metrics")
+display_metric_cards(arpu_metrics)
 
 st.subheader("Subscriber Metrics")
 display_metric_cards(subscriber_metrics)
@@ -250,14 +313,9 @@ display_metric_cards(subscriber_metrics)
 st.subheader("Net Adds Metrics")
 display_metric_cards(net_adds_metrics)
 
-st.subheader("ARPU Metrics")
-display_metric_cards(arpu_metrics)
-
-st.subheader("Revenue Metrics")
-display_metric_cards(revenue_metrics)
-
 # ARPU Forecast
-st.subheader('ARPU Forecast for Next Quarter')
+st.markdown('<h3 style="display: inline-block; border-radius: 5px; background-color: gray; color: white;">ARPU Forecast for Next Quarter</h3>', unsafe_allow_html=True)
+
 
 # Predicting ARPU for the next quarter
 postpaid_arpu_forecast = forecast_arpu(df['postpaidmobilearpu_rm'], periods=1)
@@ -340,6 +398,30 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
+
+
+# Churn Prediction
+
+st.markdown('<h3 style="display: inline-block; border-radius: 5px; background-color: gray; color: white;">Churn Prediction for Next Quarter</h3>', unsafe_allow_html=True)
+
+
+st.write(f"Churn Prediction: {'Yes' if churn_forecast[0] == 1 else 'No'}")
+st.write(f"Churn Probability: {churn_probability:.2f}")
+
+# Adding explanatory text
+st.write("""
+### Interpretation of Churn Prediction
+- **Churn Prediction: Yes**: This indicates that the model predicts customer churn (customers leaving) will occur in the next quarter.
+- **Churn Probability: 1.00**: This means the model is 100% confident that churn will happen. While this is a strong prediction, it's essential to validate with real data and consider taking proactive measures to prevent churn.
+""")
+
+# Display the DataFrame itself for reference
+st.subheader('DataSet')
+st.write(df)
+st.write("""
+
+Source: CelcomDigi Financial reports
+""")
 # Plotly Visualizations
 st.subheader('Revenue and Subscriber Trends')
 
@@ -365,22 +447,60 @@ fig_scatter_subscribers = px.scatter(df, x='quarter', y=['postpaidmobile_000', '
 st.plotly_chart(fig_scatter_subscribers)
 
 
+st.subheader('External trends like GDP, CPI, and OPR')
+# GDP Trends
 
-# Display the DataFrame itself for reference
-st.subheader('DataSet')
-st.write(df)
 
-# Churn Prediction
-st.subheader('Churn Prediction for Next Quarter')
-st.write(f"Churn Prediction: {'Yes' if churn_forecast[0] == 1 else 'No'}")
-st.write(f"Churn Probability: {churn_probability:.2f}")
-
-# Adding explanatory text
+fig_line_GDP = px.line(df_gdp, x='quarter', y=['Malaysia_GDP(%)'],
+                                     labels={'value': '%', 'quarter': 'Quarter'},
+                                     title='GDP growth (Line Plot)',
+                                     template="plotly_dark")
+st.plotly_chart(fig_line_GDP)
 st.write("""
-### Interpretation of Churn Prediction
-- **Churn Prediction: Yes**: This indicates that the model predicts customer churn (customers leaving) will occur in the next quarter.
-- **Churn Probability: 1.00**: This means the model is 100% confident that churn will happen. While this is a strong prediction, it's essential to validate with real data and consider taking proactive measures to prevent churn.
+
+Source: Department of Statistics Malaysia
 """)
+# CPI Trends
+
+fig_scatter_CPI = px.scatter(df_cpi, x='month', y=['CPI(RM)','Information&Communication_CPI(RM)'],
+                                     labels={'value': 'RM', 'month': 'Monthly'},
+                                     title='CPI (Scatter Plot)',
+                                     template="plotly_dark")
+st.plotly_chart(fig_scatter_CPI)
+st.write("""
+
+Source: Department of Statistics Malaysia
+""")
+
+# OPR Trends
+
+
+fig_line_OPR = px.line(df_opr, x='date', y=['change_in_opr(%)','new_opr_level(%)'],
+                                     labels={'value': '%', 'date': 'Date'},
+                                     title='OPR (Line Plot)',
+                                     template="plotly_dark")
+st.plotly_chart(fig_line_OPR)
+
+st.write("""
+
+Source: Bank Negara Malaysia
+""")
+# Display the DataFrame itself for reference
+# st.subheader('DataSet')
+# st.write(df)
+
+# st.subheader('DataSet(GDP)')
+# st.write(df_gdp)
+
+# st.subheader('DataSet(CPI)')
+# st.write(df_cpi)
+
+# st.subheader('DataSet(OPR)')
+# st.write(df_opr)
+
+
+
+
 
 st.markdown('<h1 style="color: yellow;">Meet the BULLISH yellow man!!!</h1>', unsafe_allow_html=True)
 st.video('video (2).mp4')
@@ -451,10 +571,3 @@ Using the `sklearn` library in Python, the steps include:
 """)
 
 
-# Adding a disclaimer
-st.write("""
-### Disclaimer
-
-The data and analysis on this page are for demonstration purposes only and prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html) for up-to-date and accurate information.
-
-""")
