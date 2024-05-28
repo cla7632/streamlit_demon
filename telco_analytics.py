@@ -172,49 +172,6 @@ prepaid_arpu_change = ((prepaid_arpu_forecast.iloc[0] - latest_prepaid_arpu) / l
 blended_arpu_change = ((blended_arpu_forecast.iloc[0] - latest_blended_arpu) / latest_blended_arpu) * 100
 fibre_arpu_change = ((fibre_arpu_forecast.iloc[0] - latest_fibre_arpu) / latest_fibre_arpu) * 100
 
-# Creating a synthetic target variable for churn
-df['churn'] = (df['totalnetaddsubscribers_000'] < 0).astype(int)
-
-# Feature selection and splitting data
-features = ['postpaidrevenue_rmm', 'prepaidrevenue_rmm', 'wholesaleothersrevenue_rmm', 
-            'homefibrerevenue_rmm', 'postpaidmobile_000', 'prepaid_000', 'fibre_000', 
-            'postpaidmobilearpu_rm', 'prepaidarpu_rm', 'blendedmobilearpu_rm', 'fibrearpu_rm']
-X = df[features]
-y = df['churn']
-
-# Split data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Train logistic regression model
-model = LogisticRegression(max_iter=1000)
-model.fit(X_train, y_train)
-
-# Predict churn for the test set
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-print(f'Churn Prediction Accuracy: {accuracy:.2f}')
-
-# Predict churn for the next quarter
-next_quarter_features = np.array([[
-    df['postpaidrevenue_rmm'].iloc[-1],
-    df['prepaidrevenue_rmm'].iloc[-1],
-    df['wholesaleothersrevenue_rmm'].iloc[-1],
-    df['homefibrerevenue_rmm'].iloc[-1],
-    df['postpaidmobile_000'].iloc[-1],
-    df['prepaid_000'].iloc[-1],
-    df['fibre_000'].iloc[-1],
-    postpaid_arpu_forecast.iloc[0],
-    prepaid_arpu_forecast.iloc[0],
-    blended_arpu_forecast.iloc[0],
-    fibre_arpu_forecast.iloc[0]
-]])
-
-churn_forecast = model.predict(next_quarter_features)
-churn_probability = model.predict_proba(next_quarter_features)[0][1]
-
-print("Churn Forecast for Next Quarter:", churn_forecast[0])
-print("Churn Probability for Next Quarter:", churn_probability)
-
 # Adding a disclaimer
 st.write("""
 ### Disclaimer
@@ -225,7 +182,7 @@ The data and analysis on this page are for demonstration purposes only and prepa
 
 
 # Streamlit Dashboard
-st.markdown('<h1 style="color: yellow;">Telco ARPU and Subscriber Analytics & Prediction</h1>', unsafe_allow_html=True)
+st.markdown('<h1 style="color: yellow;">Telco ARPU Analytics & Prediction</h1>', unsafe_allow_html=True)
 
 # Metric Cards for Latest Quarter Information
 latest_quarter = df.iloc[-1]
@@ -402,18 +359,18 @@ st.markdown(
 
 # Churn Prediction
 
-st.markdown('<h3 style="display: inline-block; border-radius: 5px; background-color: gray; color: white;">Churn Prediction for Next Quarter</h3>', unsafe_allow_html=True)
+# st.markdown('<h3 style="display: inline-block; border-radius: 5px; background-color: gray; color: white;">Churn Prediction for Next Quarter</h3>', unsafe_allow_html=True)
 
 
-st.write(f"Churn Prediction: {'Yes' if churn_forecast[0] == 1 else 'No'}")
-st.write(f"Churn Probability: {churn_probability:.2f}")
+# st.write(f"Churn Prediction: {'Yes' if churn_forecast[0] == 1 else 'No'}")
+# st.write(f"Churn Probability: {churn_probability:.2f}")
 
 # Adding explanatory text
-st.write("""
-### Interpretation of Churn Prediction
-- **Churn Prediction: Yes**: This indicates that the model predicts customer churn (customers leaving) will occur in the next quarter.
-- **Churn Probability: 1.00**: This means the model is 100% confident that churn will happen. While this is a strong prediction, it's essential to validate with real data and consider taking proactive measures to prevent churn.
-""")
+# st.write("""
+# ### Interpretation of Churn Prediction
+# - **Churn Prediction: Yes**: This indicates that the model predicts customer churn (customers leaving) will occur in the next quarter.
+# - **Churn Probability: 1.00**: This means the model is 100% confident that churn will happen. While this is a strong prediction, it's essential to validate with real data and consider taking proactive measures to prevent churn.
+# """)
 
 # Display the DataFrame itself for reference
 st.subheader('DataSet')
@@ -423,7 +380,16 @@ st.write("""
 Source: CelcomDigi Financial reports
 """)
 # Plotly Visualizations
-st.subheader('Revenue and Subscriber Trends')
+st.subheader('ARPU, Revenue and Subscriber Trends')
+
+# ARPU Trends
+
+
+fig_line_ARPU = px.line(df, x='quarter', y=['postpaidmobilearpu_rm', 'prepaidarpu_rm', 'blendedmobilearpu_rm', 'fibrearpu_rm','blendedarpu_rm'],
+                                     labels={'value': 'ARPU (RM)', 'quarter': 'Quarter'},
+                                     title='ARPU Trends by Segment (Line Plot)',
+                                     template="plotly_dark")
+st.plotly_chart(fig_line_ARPU)
 
 # Revenue Trends
 
@@ -452,7 +418,7 @@ st.subheader('External trends like GDP, CPI, and OPR')
 
 
 fig_line_GDP = px.line(df_gdp, x='quarter', y=['Malaysia_GDP(%)'],
-                                     labels={'value': '%', 'quarter': 'Quarter'},
+                                     labels={'value': 'Percentage', 'quarter': 'Quarter'},
                                      title='GDP growth (Line Plot)',
                                      template="plotly_dark")
 st.plotly_chart(fig_line_GDP)
@@ -476,7 +442,7 @@ Source: Department of Statistics Malaysia
 
 
 fig_line_OPR = px.line(df_opr, x='date', y=['change_in_opr(%)','new_opr_level(%)'],
-                                     labels={'value': '%', 'date': 'Date'},
+                                     labels={'value': 'Percentage', 'date': 'Date'},
                                      title='OPR (Line Plot)',
                                      template="plotly_dark")
 st.plotly_chart(fig_line_OPR)
@@ -530,44 +496,19 @@ The ARIMA model is implemented using the `statsmodels` library in Python. The st
 """)
 
 # Display Churn Prediction Methodology
-st.markdown('<h1 style="color: yellow;">Churn Prediction Methodology</h1>', unsafe_allow_html=True)
+# st.markdown('<h1 style="color: yellow;">Churn Prediction Methodology</h1>', unsafe_allow_html=True)
 
 st.markdown("""
 
-
-### Objective
-To predict the likelihood of a customer leaving the service (churning) in the future.
-
-### Technology and Methodology
-
-#### Supervised Machine Learning
-Churn prediction is a classification problem where the goal is to predict whether a customer will churn (leave) or not.
-
-#### Logistic Regression
-A logistic regression model is used for binary classification. It estimates the probability that a given input point belongs to a certain class (e.g., churn or no churn).
-
-#### Features and Labels
-- **Features**: Various metrics such as ARPU, revenue, subscriber counts, and net additions.
-- **Label**: A binary indicator of churn, where 1 indicates the customer churned, and 0 indicates they did not.
-
-### Implementation
-Using the `sklearn` library in Python, the steps include:
-1. Preparing the dataset with relevant features and labels.
-2. Splitting the data into training and testing sets.
-3. Training the logistic regression model on the training data.
-4. Evaluating the model's accuracy on the test data.
-5. Using the trained model to predict churn for future periods based on the latest data.
 
 ### Technologies Used
 - **Python**: The primary programming language used for implementing the models.
 - **Pandas**: For data manipulation and analysis.
 - **Statsmodels**: For statistical modeling and time series analysis (ARIMA).
-- **Scikit-learn (sklearn)**: For machine learning tasks, including logistic regression.
 - **Streamlit**: For building the interactive web application to display the results and metrics.
 
 ### Summary
 - **ARPU Forecasting**: Uses the ARIMA model from the `statsmodels` library to predict future ARPU values based on historical data. This involves time series analysis, making the data stationary, and modeling the autoregressive and moving average components.
-- **Churn Prediction**: Uses logistic regression from the `sklearn` library to predict customer churn. This involves preparing features and labels, training the model on historical data, and using the model to predict future churn probabilities.
 """)
 
 
