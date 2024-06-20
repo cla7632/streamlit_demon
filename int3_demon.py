@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
-from st_aggrid import AgGrid, GridOptionsBuilder
+from streamlit-aggrid import AgGrid, GridOptionsBuilder
 
 # Sample data (replace with actual data)
 data = {
