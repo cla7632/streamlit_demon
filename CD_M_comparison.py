@@ -241,4 +241,4 @@ elif st.session_state.pill == 'blue':
 st.markdown("### Latest Quarter Data (1Q24)")
 st.dataframe(df)
 
-st.dataframe(df_mypop)
+# st.dataframe(df_mypop)
