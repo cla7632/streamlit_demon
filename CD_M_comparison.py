@@ -164,6 +164,14 @@ st.markdown(
 # Content within the overlay
 st.markdown('<div class="overlay"></div>', unsafe_allow_html=True)
 
+# Adding a disclaimer
+st.write("""
+### Disclaimer
+
+The data and analysis on this page are for demonstration purposes only and prepared by [lachieng](https://lachieng.xyz). Please visit [CelcomDigi](https://celcomdigi.listedcompany.com/financials.html), and [Maxis](https://maxis.listedcompany.com/financials.html) for up-to-date and accurate information.
+
+""")
+
 # Streamlit Application
 st.title("CelcomDigi's Journey (Quarter [1Q24]): Red Pill or Blue Pill?")
 
