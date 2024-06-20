@@ -79,3 +79,7 @@ st.write(f"The highest {selected_metric} recorded by CelcomDigi was {max_revenue
 # Display raw data
 st.subheader("Raw Data")
 st.dataframe(df)
+
+
+# Link to the second app (2.py)
+st.markdown("For a detailed comparison, visit [here](https://cmdcomparison.streamlit.app/)")
