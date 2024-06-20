@@ -122,7 +122,7 @@ st.dataframe(predicted_comparison_df)
 
 # Model Interpretation
 st.subheader("Model Interpretation")
-st.write(f"The model used is Linear Regression, which predicts {selected_metric} based on historical quarters and company data.")
+st.write(f"The model used is Linear Regression, which predicts {selected_metric} based on historical quarters data.")
 st.write(f"The Mean Absolute Error (MAE) of the model on the test set is: {mae:.2f} RM'm.")
 st.write("The model suggests that future revenue trends can be projected based on historical data patterns.")
 
