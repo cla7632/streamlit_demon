@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Sample data (replace with actual data)
 data = {
@@ -23,10 +24,6 @@ st.title("Revenue Comparison: Maxis vs. CelcomDigi")
 st.sidebar.header("Filter")
 selected_metric = st.sidebar.selectbox("Select Metric", ["Postpaid Revenue (RM'm)", "Prepaid Revenue (RM'm)", "Home Fibre Revenue (RM'm)"])
 
-# Plotting the selected metric for both companies
-fig = px.line(df, x="Quarter", y=selected_metric, color="Company", title=f"Revenue Comparison: Maxis vs. CelcomDigi - {selected_metric}")
-st.plotly_chart(fig)
-
 # Prepare data for machine learning
 X = pd.get_dummies(df[['Quarter', 'Company']], drop_first=True)
 y = df[selected_metric]
@@ -38,6 +35,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = LinearRegression()
 model.fit(X_train, y_train)
 
+# Evaluate the model
+y_pred = model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+
 # Make predictions for the next quarter (1Q24)
 next_quarter = pd.DataFrame({'Quarter': ['1Q24', '1Q24'], 'Company': ['Maxis', 'CelcomDigi']})
 X_next = pd.get_dummies(next_quarter, drop_first=True)
@@ -48,22 +49,73 @@ X_next = X_next.reindex(columns=X_train.columns, fill_value=0)
 # Predict for next quarter
 predicted_revenue = model.predict(X_next)
 
+# Extend the DataFrame with predicted values
+predicted_df = pd.DataFrame({
+    'Company': ['Maxis', 'CelcomDigi'],
+    'Quarter': ['1Q24', '1Q24'],
+    selected_metric: predicted_revenue
+})
+
+# Combine actual and predicted data for plotting
+combined_df = pd.concat([df, predicted_df], ignore_index=True)
+
+# Plotting the selected metric for both companies
+fig = go.Figure()
+
+for company in combined_df['Company'].unique():
+    company_data = combined_df[combined_df['Company'] == company]
+    
+    color = 'green' if company == 'Maxis' else 'blue'
+    
+    fig.add_trace(go.Scatter(
+        x=company_data['Quarter'],
+        y=company_data[selected_metric],
+        mode='lines+markers',
+        name=f'{company}',
+        line=dict(color=color)
+    ))
+    
+    # Add dotted line for predicted values in orange
+    if company == 'Maxis':
+        fig.add_trace(go.Scatter(
+            x=['4Q23', '1Q24'],
+            y=[company_data[company_data['Quarter'] == '4Q23'][selected_metric].values[0], predicted_revenue[0]],
+            mode='lines+markers',
+            name=f'{company} Predicted',
+            line=dict(color='orange', dash='dot')
+        ))
+    elif company == 'CelcomDigi':
+        fig.add_trace(go.Scatter(
+            x=['4Q23', '1Q24'],
+            y=[company_data[company_data['Quarter'] == '4Q23'][selected_metric].values[0], predicted_revenue[1]],
+            mode='lines+markers',
+            name=f'{company} Predicted',
+            line=dict(color='orange', dash='dot')
+        ))
+
+fig.update_layout(title=f"Revenue Comparison: Maxis vs. CelcomDigi - {selected_metric}",
+                xaxis_title='Quarter',
+                yaxis_title=selected_metric)
+
+st.plotly_chart(fig)
+
 # Display model predictions and actual values for 1Q24
 actual_1Q24_revenue_maxis = df[(df["Company"] == "Maxis") & (df["Quarter"] == "1Q24")][selected_metric].values[0]
 actual_1Q24_revenue_celcomdigi = df[(df["Company"] == "CelcomDigi") & (df["Quarter"] == "1Q24")][selected_metric].values[0]
 
 st.subheader("Model Predictions and Actual Values")
-predicted_df = pd.DataFrame({
+predicted_comparison_df = pd.DataFrame({
     'Company': ['Maxis', 'CelcomDigi'],
     'Quarter': ['1Q24', '1Q24'],
     'Predicted Revenue': predicted_revenue,
     'Actual Revenue': [actual_1Q24_revenue_maxis, actual_1Q24_revenue_celcomdigi]
 })
-st.dataframe(predicted_df)
+st.dataframe(predicted_comparison_df)
 
 # Model Interpretation
 st.subheader("Model Interpretation")
 st.write(f"The model used is Linear Regression, which predicts {selected_metric} based on historical quarters and company data.")
+st.write(f"The Mean Absolute Error (MAE) of the model on the test set is: {mae:.2f} RM'm.")
 st.write("The model suggests that future revenue trends can be projected based on historical data patterns.")
 
 # Additional Insights
@@ -76,11 +128,13 @@ max_revenue_celcomdigi = df[df["Company"] == "CelcomDigi"][selected_metric].max(
 max_quarter_celcomdigi = df[(df["Company"] == "CelcomDigi") & (df[selected_metric] == max_revenue_celcomdigi)]["Quarter"].values[0]
 st.write(f"The highest {selected_metric} recorded by CelcomDigi was {max_revenue_celcomdigi} RM'm in {max_quarter_celcomdigi}.")
 
-# Display raw data
-st.subheader("Raw Data")
-st.dataframe(df)
+# Display raw data with AG Grid
+st.subheader("Raw Data with AG Grid")
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_pagination(paginationAutoPageSize=True)
+gridOptions = gb.build()
+AgGrid(df, gridOptions=gridOptions)
 
 
-# Link to the other app
 st.markdown("My 1st interview demo, visit [here](https://lamachinelearningdemo.streamlit.app/)")
 st.markdown("For a detailed comparison, visit [here](https://cmdcomparison.streamlit.app/)")
