@@ -90,7 +90,7 @@ for company in combined_df['Company'].unique():
             y=[company_data[company_data['Quarter'] == '4Q23'][selected_metric].values[0], predicted_revenue[1]],
             mode='lines+markers',
             name=f'{company} Predicted',
-            line=dict(color='orange', dash='dot')
+            line=dict(color='yellow', dash='dot')
         ))
 
 fig.update_layout(title=f"Revenue Comparison: Maxis vs. CelcomDigi - {selected_metric}",
