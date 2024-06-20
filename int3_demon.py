@@ -81,5 +81,6 @@ st.subheader("Raw Data")
 st.dataframe(df)
 
 
-# Link to the second app (2.py)
+# Link to the other app
+st.markdown("My 1st interview demo, visit [here](https://lamachinelearningdemo.streamlit.app/)")
 st.markdown("For a detailed comparison, visit [here](https://cmdcomparison.streamlit.app/)")
