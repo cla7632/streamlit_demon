@@ -144,5 +144,5 @@ gridOptions = gb.build()
 AgGrid(df, gridOptions=gridOptions)
 
 
-st.markdown("My 1st interview demo, visit [here](https://lamachinelearningdemo.streamlit.app/)")
-st.markdown("For a detailed comparison, visit [here](https://cmdcomparison.streamlit.app/)")
+st.markdown("My 1st interview demo, visit [here](https://lamachinelearningdemo.streamlit.app/). For a detailed comparison, visit [here](https://cmdcomparison.streamlit.app/)")
+
